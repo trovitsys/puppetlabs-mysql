@@ -11,6 +11,7 @@ class mysql::server::install {
   $mysqluser      = $mysql::server::options['mysqld']['user']
   $datadir        = $mysql::server::options['mysqld']['datadir']
   $basedir        = $mysql::server::options['mysqld']['basedir']
+  $log_error      = $mysql::server::options['mysqld']['log_error']
   $innodb_log_dir = $mysql::server::options['mysqld']['innodb_log_group_home_dir']
 
   $config_file = $mysql::server::config_file
@@ -29,6 +30,16 @@ class mysql::server::install {
       before  => Exec['mysql_install_db'],
       require => Package['mysql-server']
     }
+  }
+
+  $log_error_dir = $file_name = regsubst($log_error, '/[^/]{1,}$')
+  file { $log_error_dir:
+    ensure  => directory,
+    owner   => $mysqluser,
+    group   => 'adm',
+    mode    => '0755',
+    before  => Exec['mysql_install_db'],
+    require => Package['mysql-server']
   }
 
   exec { 'mysql_install_db':
