@@ -22,15 +22,41 @@ class mysql::server::install {
     $install_db_args = "--basedir=${basedir} --datadir=${datadir} --user=${mysqluser}"
   }
 
+  ####
+  # This block was added to "simulate" part of the work done by the debian
+  # postinst scripts, that we removed because we need to customize innodb data
+  # directory already on the first install. It's not nice and it's even uglier
+  # to have to modify pupeptlabs mysql module, but it's really needed
+
+  exec { 'mysql grp':
+    command => 'groupadd -r mysql',
+    unless  => 'grep -q mysql /etc/group'
+  }
+
+  exec { 'mysql usr':
+    command => 'useradd -r -s /bin/false -g mysql -d /var/lib/mysql mysql',
+    unless  => 'grep -q mysql /etc/passwd',
+    require => Exec['mysql grp']
+  }
+
+  file { '/var/lib/mysql':
+    ensure  => directory,
+    owner   => $mysqluser,
+    mode    => '0755',
+    require => [Package['mysql-server'], Exec['mysql usr']]
+  }
+
   if ( $innodb_log_dir != $datadir ) {
     file { $innodb_log_dir:
       ensure  => directory,
       owner   => $mysqluser,
       mode    => '0755',
       before  => Exec['mysql_install_db'],
-      require => Package['mysql-server']
+      require => File['/var/lib/mysql']
     }
   }
+
+  ####
 
   $log_error_dir = regsubst($log_error, '/[^/]{1,}$', '')
   file { $log_error_dir:
