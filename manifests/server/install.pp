@@ -32,7 +32,7 @@ class mysql::server::install {
     }
   }
 
-  $log_error_dir = $file_name = regsubst($log_error, '/[^/]{1,}$')
+  $log_error_dir = regsubst($log_error, '/[^/]{1,}$', '')
   file { $log_error_dir:
     ensure  => directory,
     owner   => $mysqluser,
