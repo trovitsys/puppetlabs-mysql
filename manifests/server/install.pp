@@ -8,15 +8,27 @@ class mysql::server::install {
   }
 
   # Build the initial databases.
-  $mysqluser = $mysql::server::options['mysqld']['user']
-  $datadir = $mysql::server::options['mysqld']['datadir']
-  $basedir = $mysql::server::options['mysqld']['basedir']
+  $mysqluser      = $mysql::server::options['mysqld']['user']
+  $datadir        = $mysql::server::options['mysqld']['datadir']
+  $basedir        = $mysql::server::options['mysqld']['basedir']
+  $innodb_log_dir = $mysql::server::options['mysqld']['innodb_log_group_home_dir']
+
   $config_file = $mysql::server::config_file
 
   if $mysql::server::manage_config_file {
     $install_db_args = "--basedir=${basedir} --defaults-extra-file=${config_file} --datadir=${datadir} --user=${mysqluser}"
   } else {
     $install_db_args = "--basedir=${basedir} --datadir=${datadir} --user=${mysqluser}"
+  }
+
+  if ( $innodb_log_dir != $datadir ) {
+    file { $innodb_log_dir:
+      ensure  => directory,
+      owner   => $mysqluser,
+      mode    => '0755',
+      before  => Exec['mysql_install_db'],
+      require => Package['mysql-server']
+    }
   }
 
   exec { 'mysql_install_db':
