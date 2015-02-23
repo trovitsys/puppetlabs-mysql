@@ -63,15 +63,20 @@ class mysql::server::install {
     require => Package['mysql-server']
   }
 
+
   $log_error_dir = regsubst($log_error, '/[^/]{1,}$', '')
-  file { $log_error_dir:
-    ensure  => directory,
-    owner   => $mysqluser,
-    group   => 'adm',
-    mode    => '0755',
-    before  => Exec['mysql_install_db'],
-    require => Package['mysql-server']
+  if $log_error {
+    $log_error_dir = mysql_dirname($log_error)
+    file { $log_error_dir:
+      ensure  => directory,
+      owner   => $mysqluser,
+      group   => 'adm',
+      mode    => '0755',
+      before  => Exec['mysql_install_db'],
+      require => Package['mysql-server']
+    }
   }
+
 
   ####
 
