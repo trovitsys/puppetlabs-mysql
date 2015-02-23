@@ -63,8 +63,6 @@ class mysql::server::install {
     require => Package['mysql-server']
   }
 
-
-  $log_error_dir = regsubst($log_error, '/[^/]{1,}$', '')
   if $log_error {
     $log_error_dir = mysql_dirname($log_error)
     file { $log_error_dir:
