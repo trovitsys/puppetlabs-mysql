@@ -56,7 +56,12 @@ class mysql::server::install {
     }
   }
 
-  ####
+  exec { 'replace init':
+    command => "/bin/sed 's_MYADMIN=.*_MYADMIN=/usr/bin/mysqladmin_; s_export HOME=.*_export HOME=/root_'  /etc/init.d/mysql",
+    unless  => '/bin/grep -q debian.cnf /etc/init.d/mysql',
+    before  => Exec['mysql_install_db'],
+    require => Package['mysql-server']
+  }
 
   $log_error_dir = regsubst($log_error, '/[^/]{1,}$', '')
   file { $log_error_dir:
@@ -67,6 +72,8 @@ class mysql::server::install {
     before  => Exec['mysql_install_db'],
     require => Package['mysql-server']
   }
+
+  ####
 
   exec { 'mysql_install_db':
     command   => "mysql_install_db ${install_db_args}",
