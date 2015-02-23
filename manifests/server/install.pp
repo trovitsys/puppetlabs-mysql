@@ -57,7 +57,7 @@ class mysql::server::install {
   }
 
   exec { 'replace init':
-    command => "/bin/sed 's_MYADMIN=.*_MYADMIN=/usr/bin/mysqladmin_; s_export HOME=.*_export HOME=/root_'  /etc/init.d/mysql",
+    command => "/bin/sed -i 's_MYADMIN=.*_MYADMIN=/usr/bin/mysqladmin_; s_export HOME=.*_export HOME=/root_'  /etc/init.d/mysql",
     onlyif  => '/bin/grep -q debian.cnf /etc/init.d/mysql',
     before  => Exec['mysql_install_db'],
     require => Package['mysql-server']
