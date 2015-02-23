@@ -12,6 +12,7 @@ class mysql::server::install {
   $datadir        = $mysql::server::options['mysqld']['datadir']
   $basedir        = $mysql::server::options['mysqld']['basedir']
   $log_error      = $mysql::server::options['mysqld']['log_error']
+  $logbin         = $mysql::server::options['mysqld']['log_bin']
   $innodb_log_dir = $mysql::server::options['mysqld']['innodb_log_group_home_dir']
 
   $config_file = $mysql::server::config_file
@@ -71,6 +72,19 @@ class mysql::server::install {
     mode    => '0755',
     before  => Exec['mysql_install_db'],
     require => Package['mysql-server']
+  }
+
+  $logbin_dir = regsubst($logbin, '/[^/]{1,}$', '')
+  if ( $logbin_dir != '' )
+  {
+    file { $logbin_dir:
+      ensure  => directory,
+      owner   => $mysqluser,
+      group   => 'adm',
+      mode    => '0755',
+      before  => Exec['mysql_install_db'],
+      require => File['/var/lib/mysql']
+    }
   }
 
   ####
