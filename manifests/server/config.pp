@@ -30,7 +30,6 @@ class mysql::server::config {
       group  => $options['mysqld']['user'],
     }
     ensure_resource('file', $logbindir, $logbindir_attr)
-    }
   }
 
   $relaylog = pick($options['mysqld']['relay-log'], $options['mysqld']['relay_log'], false)
