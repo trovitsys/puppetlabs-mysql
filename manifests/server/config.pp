@@ -23,12 +23,27 @@ class mysql::server::config {
 
   if $logbin {
     $logbindir = mysql_dirname($logbin)
-    file { $logbindir:
+    $logbindir_attr = {
       ensure => directory,
       mode   => '0755',
       owner  => $options['mysqld']['user'],
       group  => $options['mysqld']['user'],
     }
+    ensure_resource('file', $logbindir, $logbindir_attr)
+    }
+  }
+
+  $relaylog = pick($options['mysqld']['relay-log'], $options['mysqld']['relay_log'], false)
+
+  if $relaylog {
+    $relaylogdir = mysql_dirname($relaylog)
+    $relaylogdir_attr = {
+      ensure => directory,
+      mode   => '0755',
+      owner  => $options['mysqld']['user'],
+      group  => $options['mysqld']['user'],
+    }
+    ensure_resource('file', $relaylogdir, $relaylogdir_attr)
   }
 
   if $mysql::server::manage_config_file  {
